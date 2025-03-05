@@ -137,19 +137,15 @@ function App() {
 
   return (
     <div className={cn(
-      "min-h-screen flex items-center justify-center p-4",
+      "min-h-screen w-full",
       "bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100",
       "transition-colors duration-300"
     )}>
-      <div className="w-full max-w-md">
+      <div className="mx-auto max-w-3xl h-screen flex flex-col">
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cn(
-            "overflow-hidden rounded-2xl shadow-lg",
-            "bg-white dark:bg-slate-900",
-            "transition-colors duration-300"
-          )}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex-1 flex flex-col overflow-hidden"
         >
           {/* Header */}
           <div className={cn(
@@ -247,14 +243,14 @@ function App() {
           </div>
 
           {/* Todo List */}
-          <div className="max-h-[350px] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900">
             <AnimatePresence>
               {filteredTodos.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center py-12 px-4 text-slate-400 dark:text-slate-500"
+                  className="flex flex-col items-center justify-center h-full py-12 px-4 text-slate-400 dark:text-slate-500"
                 >
                   <p className="text-center">
                     {filter === 'all' 
@@ -369,7 +365,7 @@ function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-4 text-center text-slate-500 dark:text-slate-400 text-sm"
+          className="py-4 text-center text-slate-500 dark:text-slate-400 text-sm"
         >
           <p>Double-click or use the edit button to edit a task</p>
           <p className="mt-1 text-xs opacity-70">Your tasks are saved locally</p>
