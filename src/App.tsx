@@ -1,139 +1,265 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { useForm } from 'react-hook-form'
-import toast from 'react-hot-toast'
-import { LucideHeart, LucideGithub } from 'lucide-react'
-import clsx from 'clsx'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { LucideCheck, LucideTrash, LucidePlus, LucideX } from 'lucide-react'
+import { cn } from './lib/utils'
 
-type FormData = {
-  name: string
-  email: string
+// Define the Todo type
+type Todo = {
+  id: string
+  text: string
+  completed: boolean
 }
 
+// Filter types
+type FilterType = 'all' | 'active' | 'completed'
+
 function App() {
-  const [count, setCount] = useState(0)
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
-  
-  const onSubmit = (data: FormData) => {
-    console.log(data)
-    toast.success(`Hello, ${data.name}!`)
+  // State for todos and new todo input
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [newTodo, setNewTodo] = useState('')
+  const [filter, setFilter] = useState<FilterType>('all')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+
+  // Load todos from localStorage on initial render
+  useEffect(() => {
+    const savedTodos = localStorage.getItem('todos')
+    if (savedTodos) {
+      setTodos(JSON.parse(savedTodos))
+    }
+  }, [])
+
+  // Save todos to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos))
+  }, [todos])
+
+  // Add a new todo
+  const addTodo = () => {
+    if (newTodo.trim() !== '') {
+      const newTodoItem: Todo = {
+        id: crypto.randomUUID(),
+        text: newTodo.trim(),
+        completed: false
+      }
+      setTodos([...todos, newTodoItem])
+      setNewTodo('')
+    }
   }
+
+  // Toggle todo completion status
+  const toggleTodo = (id: string) => {
+    setTodos(
+      todos.map(todo => 
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    )
+  }
+
+  // Delete a todo
+  const deleteTodo = (id: string) => {
+    setTodos(todos.filter(todo => todo.id !== id))
+  }
+
+  // Start editing a todo
+  const startEditing = (todo: Todo) => {
+    setEditingId(todo.id)
+    setEditText(todo.text)
+  }
+
+  // Save edited todo
+  const saveEdit = () => {
+    if (editingId && editText.trim() !== '') {
+      setTodos(
+        todos.map(todo => 
+          todo.id === editingId ? { ...todo, text: editText.trim() } : todo
+        )
+      )
+      setEditingId(null)
+    }
+  }
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingId(null)
+  }
+
+  // Filter todos based on current filter
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'active') return !todo.completed
+    if (filter === 'completed') return todo.completed
+    return true
+  })
+
+  // Count remaining active todos
+  const activeTodoCount = todos.filter(todo => !todo.completed).length
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-100 flex flex-col items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white rounded-xl shadow-lg p-8"
+        className="max-w-md w-full bg-white rounded-xl shadow-lg p-6"
       >
-        <header className="text-center mb-8">
+        <header className="text-center mb-6">
           <h1 className="text-3xl font-bold text-primary-700">
-            Vite + React + TypeScript
+            Todo List
           </h1>
           <motion.div 
-            className="mt-2 flex items-center justify-center gap-2 text-secondary-500"
+            className="mt-1 text-secondary-500 text-sm"
             whileHover={{ scale: 1.05 }}
           >
-            <LucideHeart className="text-red-500" />
-            <span>Development Environment</span>
+            <span>Stay organized, get things done</span>
           </motion.div>
         </header>
 
-        <div className="mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <button
-              className={clsx(
-                "px-4 py-2 rounded-md transition-all duration-200",
-                "bg-primary-600 hover:bg-primary-700 text-white",
-                "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-              )}
-              onClick={() => {
-                setCount(count + 1)
-                toast.success(`Count increased to ${count + 1}!`)
-              }}
+        {/* Add Todo Form */}
+        <div className="mb-6">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newTodo}
+              onChange={(e) => setNewTodo(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+              placeholder="What needs to be done?"
+              className="flex-1 px-4 py-2 rounded-md border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={addTodo}
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             >
-              Count is {count}
-            </button>
+              <LucidePlus size={20} />
+            </motion.button>
           </div>
-          <p className="text-sm text-center text-secondary-500">
-            Edit <code className="font-mono bg-secondary-100 p-1 rounded">src/App.tsx</code> and save to test HMR
-          </p>
         </div>
 
-        <form 
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4"
-        >
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-secondary-700">
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              className={clsx(
-                "mt-1 block w-full rounded-md border-secondary-300 shadow-sm",
-                "focus:border-primary-500 focus:ring-primary-500",
-                errors.name && "border-red-500"
+        {/* Filter Tabs */}
+        <div className="flex mb-4 border-b border-secondary-200">
+          {(['all', 'active', 'completed'] as const).map((filterType) => (
+            <button
+              key={filterType}
+              onClick={() => setFilter(filterType)}
+              className={cn(
+                "flex-1 py-2 px-4 text-sm font-medium transition-colors",
+                filter === filterType 
+                  ? "text-primary-600 border-b-2 border-primary-600" 
+                  : "text-secondary-500 hover:text-primary-600"
               )}
-              {...register("name", { required: "Name is required" })}
-            />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+            >
+              {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Todo List */}
+        <div className="space-y-2 mb-4">
+          <AnimatePresence>
+            {filteredTodos.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-6 text-secondary-400"
+              >
+                {filter === 'all' 
+                  ? "Add your first todo!" 
+                  : filter === 'active' 
+                    ? "No active todos" 
+                    : "No completed todos"}
+              </motion.div>
+            ) : (
+              filteredTodos.map(todo => (
+                <motion.div
+                  key={todo.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, height: 0 }}
+                  layout
+                  className="bg-white border border-secondary-200 rounded-lg p-3 flex items-center gap-3 group"
+                >
+                  <button
+                    onClick={() => toggleTodo(todo.id)}
+                    className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
+                      todo.completed 
+                        ? "bg-primary-600 text-white" 
+                        : "border-2 border-secondary-300 hover:border-primary-500"
+                    )}
+                  >
+                    {todo.completed && <LucideCheck size={14} />}
+                  </button>
+                  
+                  {editingId === todo.id ? (
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        type="text"
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                        autoFocus
+                        className="flex-1 px-2 py-1 rounded border border-secondary-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      />
+                      <button 
+                        onClick={saveEdit}
+                        className="p-1 text-primary-600 hover:text-primary-800"
+                      >
+                        <LucideCheck size={18} />
+                      </button>
+                      <button 
+                        onClick={cancelEdit}
+                        className="p-1 text-secondary-500 hover:text-secondary-700"
+                      >
+                        <LucideX size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span 
+                        className={cn(
+                          "flex-1",
+                          todo.completed && "text-secondary-400 line-through"
+                        )}
+                        onDoubleClick={() => startEditing(todo)}
+                      >
+                        {todo.text}
+                      </span>
+                      <button
+                        onClick={() => deleteTodo(todo.id)}
+                        className="text-secondary-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <LucideTrash size={18} />
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              ))
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        {todos.length > 0 && (
+          <div className="text-sm text-secondary-500 flex justify-between items-center">
+            <span>{activeTodoCount} item{activeTodoCount !== 1 ? 's' : ''} left</span>
+            {todos.some(todo => todo.completed) && (
+              <button
+                onClick={() => setTodos(todos.filter(todo => !todo.completed))}
+                className="text-secondary-500 hover:text-primary-600 transition-colors"
+              >
+                Clear completed
+              </button>
             )}
           </div>
-          
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-secondary-700">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={clsx(
-                "mt-1 block w-full rounded-md border-secondary-300 shadow-sm",
-                "focus:border-primary-500 focus:ring-primary-500",
-                errors.email && "border-red-500"
-              )}
-              {...register("email", { 
-                required: "Email is required",
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address"
-                }
-              })}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-            )}
-          </div>
-          
-          <button
-            type="submit"
-            className={clsx(
-              "w-full px-4 py-2 rounded-md transition-all duration-200",
-              "bg-primary-600 hover:bg-primary-700 text-white",
-              "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-            )}
-          >
-            Submit
-          </button>
-        </form>
+        )}
       </motion.div>
       
-      <footer className="mt-8 text-secondary-500 flex items-center gap-2">
-        <LucideGithub />
-        <a 
-          href="https://github.com"
-          target="_blank"
-          rel="noreferrer"
-          className="hover:text-primary-600 transition-colors"
-        >
-          View on GitHub
-        </a>
+      <footer className="mt-8 text-secondary-500 text-sm">
+        <p>Double-click to edit a todo</p>
       </footer>
     </div>
   )
 }
 
-export default App 
+export default App
