@@ -141,7 +141,7 @@ function App() {
       "bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100",
       "transition-colors duration-300"
     )}>
-      <div className="mx-auto max-w-3xl h-screen flex flex-col">
+      <div className="mx-auto max-w-3xl h-screen flex flex-col px-4 sm:px-6">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -150,11 +150,11 @@ function App() {
           {/* Header */}
           <div className={cn(
             "bg-gradient-to-r from-blue-500 to-indigo-600",
-            "p-6 text-white"
+            "p-4 sm:p-6 text-white rounded-b-lg"
           )}>
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <LucideListTodo className="h-6 w-6" />
+              <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                <LucideListTodo className="h-5 w-5 sm:h-6 sm:w-6" />
                 <span>TaskMaster</span>
               </h1>
               <motion.button
@@ -185,7 +185,7 @@ function App() {
                 onKeyDown={(e) => e.key === 'Enter' && addTodo()}
                 placeholder="Add a new task..."
                 className={cn(
-                  "w-full px-4 py-3 pr-12 rounded-full",
+                  "w-full px-4 py-3 pr-14 rounded-full",
                   "text-slate-800 placeholder:text-slate-400",
                   "border-none outline-none focus:ring-2 focus:ring-white/30",
                   "transition-all duration-200"
@@ -197,12 +197,13 @@ function App() {
                 onClick={addTodo}
                 disabled={newTodo.trim() === ''}
                 className={cn(
-                  "absolute right-2 top-1/2 -translate-y-1/2",
+                  "absolute right-3 top-1/2 -translate-y-1/2",
                   "w-8 h-8 rounded-full flex items-center justify-center",
                   "bg-blue-500 text-white",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   "transition-colors hover:bg-blue-600"
                 )}
+                aria-label="Add task"
               >
                 <LucidePlus size={18} />
               </motion.button>
@@ -216,7 +217,7 @@ function App() {
                 key={filterType}
                 onClick={() => setFilter(filterType)}
                 className={cn(
-                  "flex-1 py-3 px-4 text-sm font-medium transition-all",
+                  "flex-1 py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium transition-all",
                   filter === filterType 
                     ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400" 
                     : "text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
@@ -243,7 +244,7 @@ function App() {
           </div>
 
           {/* Todo List */}
-          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900">
+          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 rounded-b-lg">
             <AnimatePresence>
               {filteredTodos.length === 0 ? (
                 <motion.div
@@ -313,7 +314,7 @@ function App() {
                           
                           <span 
                             className={cn(
-                              "flex-1 transition-all duration-200",
+                              "flex-1 transition-all duration-200 break-words",
                               todo.completed && "text-slate-400 dark:text-slate-600 line-through"
                             )}
                             onDoubleClick={() => startEditing(todo)}
@@ -365,7 +366,7 @@ function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="py-4 text-center text-slate-500 dark:text-slate-400 text-sm"
+          className="py-4 text-center text-slate-500 dark:text-slate-400 text-xs sm:text-sm"
         >
           <p>Double-click or use the edit button to edit a task</p>
           <p className="mt-1 text-xs opacity-70">Your tasks are saved locally</p>
